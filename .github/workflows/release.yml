@@ -1,0 +1,46 @@
+name: WTS
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency: wts-release-${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make ghc python3 \
+            libc6-dev libgmp-dev libffi-dev libnuma-dev
+
+          test "$(uname -m)" = aarch64
+          test "$(getconf PAGESIZE)" = 4096
+
+          make -j2 check
+          make package
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: main-${{ github.sha }}
+
+        run: |
+          cd dist
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" *.tar.gz SHA256SUMS --clobber
+          else
+            gh release create "$TAG" *.tar.gz SHA256SUMS --target "$GITHUB_SHA" \
+              --title "WTS ${GITHUB_SHA:0:12}"
+          fi
