@@ -5,7 +5,7 @@ DYNAMIC_CC ?= $(CC)
 GHC ?= ghc
 PYTHON ?= python3
 
-CASES := geometry mremap vma-merge shared madvise cow elf-o0 elf-o3 elf-os elf-pie elf-lto \
+CASES := geometry mremap vma-merge shared madvise cow uring-mmap elf-o0 elf-o3 elf-os elf-pie elf-lto \
 	dynamic-link dynamic-load
 PAYLOADS := launch $(CASES) libwts-test.so
 
@@ -37,6 +37,7 @@ $(eval $(call case,vma-merge,vma-merge,$(STATIC_FLAGS)))
 $(eval $(call case,shared,shared,$(STATIC_FLAGS)))
 $(eval $(call case,madvise,madvise,$(STATIC_FLAGS)))
 $(eval $(call case,cow,cow,$(STATIC_FLAGS)))
+$(eval $(call case,uring-mmap,uring-mmap,$(STATIC_FLAGS)))
 $(eval $(call case,elf-o0,elf,$(STATIC_FLAGS) -O0))
 $(eval $(call case,elf-o3,elf,$(STATIC_FLAGS) -O3))
 $(eval $(call case,elf-os,elf,$(STATIC_FLAGS) -Os))
